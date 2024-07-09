@@ -1,4 +1,4 @@
-# consensus (🪼)
+# pnyx (🫧)
 
 A silly little web browser project that I'm working on.
 
@@ -6,8 +6,9 @@ A silly little web browser project that I'm working on.
 
 ## Core Tooling
 
-- Orchestration: [Docker Compose](https://docs.docker.com/compose/)
-- Containerization: [Docker](https://docs.docker.com/manuals/)
+- project managment: [Poetry]](https://docs.docker.com/compose/)
+- Deep Learning: [PyTorch](https://docs.docker.com/manuals/)
+- Inference: [Transformers](https://huggingface.co/docs/hub/transformers)
 - Static Code Analysis: [CodeClimate](https://codeclimate.com/quality)
 
 ## Core libraries
