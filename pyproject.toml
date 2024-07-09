@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "consensus"
+version = "0.1.0"
+description = "Large Language Model Consensus Library (Mixture of Experts at Implementation level)"
+authors = ["Frederik Bode <fbth@cs.aau.dk>"]
+license = "GNU General Public License v3.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
