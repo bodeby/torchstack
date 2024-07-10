@@ -1,4 +1,4 @@
-from layer import Layer
+from consensus.layer import Layer
 
 
 class Stage:
@@ -61,7 +61,7 @@ class StageOld:
         if layer in self.layers:
             self.layers.pop(layer)
 
-    def debate() -> str:
+    def debate(self) -> str:
         for layer in self.layers:
             top_k = layer.get_top_k
             print(f"Token: {top_k.token}, Probability: {top_k.prob:.4f}")

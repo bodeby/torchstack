@@ -5,6 +5,10 @@ description = "Large Language Model Consensus Library (Mixture of Experts at Imp
 authors = ["Frederik Bode <fbth@cs.aau.dk>"]
 license = "GNU General Public License v3.0"
 readme = "README.md"
+homepage = "https://github.com/bodeby/consensus"
+repository = "https://github.com/bodeby/consensus"
+documentation = "https://new_project_name.readthedocs.io"
+
 
 [tool.poetry.dependencies]
 python = "^3.12"

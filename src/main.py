@@ -1,5 +1,4 @@
-from classes.bema import Stage, Layer
-
+from consensus import Stage, Layer
 
 def main():
     stage = Stage(topic="What is the capital of France?")

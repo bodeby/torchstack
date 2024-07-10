@@ -1,4 +1,4 @@
-from classes.aggregator import Aggregator
+from consensus.aggregators.aggregator import Aggregator
 
 
 class Average(Aggregator):
