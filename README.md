@@ -6,16 +6,15 @@ A silly little web browser project that I'm working on.
 
 ## Core Tooling
 
-- project managment: [Poetry]](https://docs.docker.com/compose/)
-- Deep Learning: [PyTorch](https://docs.docker.com/manuals/)
-- Inference: [Transformers](https://huggingface.co/docs/hub/transformers)
+- Buildtool: [Poetry](https://docs.docker.com/compose/)
+- Testing: [PyTest](https://docs.pytest.org/en/8.2.x/)
+- Coverage: [coverage.py](https://coverage.readthedocs.io/en/7.5.4/)
 - Static Code Analysis: [CodeClimate](https://codeclimate.com/quality)
 
 ## Core libraries
 
-- **asyncio**: async runtime
-- **redis-py**: python redis toolkit
-- **pymongo**: mongodb driver for python
+- **transformers**: async runtime
+- **torch**: python redis toolkit
 - **loguru**: logging rotation, retention and compression
 
 ## Running the service
