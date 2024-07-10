@@ -1,5 +1,6 @@
 from consensus import Stage, Layer
 
+
 def main():
     stage = Stage(topic="What is the capital of France?")
 

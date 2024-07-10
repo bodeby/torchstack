@@ -1,4 +1,3 @@
-# ./classes/aggregator.py
 
 class Aggregator:
 

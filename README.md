@@ -1,4 +1,4 @@
-# pnyx (🫧)
+# consensus (🫧)
 
 A silly little web browser project that I'm working on.
 
@@ -21,11 +21,11 @@ A silly little web browser project that I'm working on.
 ## Running the service
 
 ```bash
-# starts the service with development settigns
+# starts the service with development settings
 python app/main.py
 ```
 
 ```bash
-# starts the service with production settigns
+# starts the service with production settings
 python app/main.py prod
 ```

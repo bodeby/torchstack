@@ -1,4 +1,4 @@
-from consensus.layer import Layer
+from consensus.layers import Layer
 
 
 class Stage:
