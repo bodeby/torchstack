@@ -1,9 +1,10 @@
-from consensus import Stage, Layer
+from consensus import Stage
+from consensus import TextLayer
 
 
 def main():
     stage = Stage(topic="What is the capital of France?")
-    phi_one = Layer(model="microsoft/Phi-3-mini-4k-instruct", weight=0.9)
+    phi_one = TextLayer(model="microsoft/Phi-3-mini-4k-instruct", weight=0.9)
     stage.add_layer(phi_one)
 
     for layer in stage.layers:

@@ -7,7 +7,8 @@ license = "GNU General Public License v3.0"
 readme = "README.md"
 homepage = "https://github.com/bodeby/consensus"
 repository = "https://github.com/bodeby/consensus"
-documentation = "https://new_project_name.readthedocs.io"
+documentation = "https://bodeby.github.io/consensus/"
+packages = [{ include = "consensus", from = "src" }]
 
 
 [tool.poetry.dependencies]
