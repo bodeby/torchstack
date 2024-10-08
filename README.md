@@ -7,11 +7,12 @@ build scaleable ensemble systems for transformer based models.
 ## Core Tooling
 
 - Packaging : [uv](https://docs.astral.sh/uv)
+- Linting / Formatting : [ruff](https://docs.astral.sh/ruff/)
 - Testing: [PyTest](https://docs.pytest.org/en/8.2.x/)
 - Coverage: [coverage.py](https://coverage.readthedocs.io/en/7.5.4/)
 - Static Code Analysis: [CodeClimate](https://codeclimate.com/quality)
 
-## Core libraries
+## Core dependencies
 
 - **transformers**: async runtime
 - **torch**: python redis toolkit
@@ -21,12 +22,12 @@ build scaleable ensemble systems for transformer based models.
 
 ```bash
 # starts the service with development settings
-python app/main.py
+uv run
 ```
 
 ```bash
 # starts the service with production settings
-python app/main.py prod
+uv build
 ```
 
 ## guides
