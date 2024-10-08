@@ -40,10 +40,8 @@ class Layer:
             outputs = self.model(**self.inputs)
             logits = outputs.logits
 
-        probabilities = F.softmax(logits, dim=-1)  # Convert logits to probabilities
-        last_token_probabilities = probabilities[
-            0, -1, :
-        ]  # Get the probabilities for the last token
+        probabilities = F.softmax(logits, dim=-1)           # Convert logits to probabilities
+        last_token_probabilities = probabilities[0, -1, :]  # Get the probabilities for the last token
 
         # Convert probabilities to a more readable format
         probs = last_token_probabilities.cpu().numpy()
