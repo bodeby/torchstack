@@ -1,5 +1,8 @@
+from src.consensus.config import EnsembleConfig
+
 def main():
-    print("hello world")
+    config = EnsembleConfig()
+    print("hello world", config)
 
 
 if __name__ == "__main__":
