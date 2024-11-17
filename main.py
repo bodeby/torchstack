@@ -1,5 +1,6 @@
 from src.consensus.config import EnsembleConfig
 
+
 def main():
     config = EnsembleConfig()
     print("hello world", config)

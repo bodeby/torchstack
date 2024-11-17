@@ -1,15 +1,15 @@
 from transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict
 
 import torch
-import logging, warnings, re
-
+import logging
+import warnings
+import re
 
 # local import
 from consensus.config import EnsembleConfig
-
 
 
 class EnsembleGenerator:
@@ -17,7 +17,7 @@ class EnsembleGenerator:
         self,
         models: List[AutoModelForCausalLM],
         tokenizers: List[AutoTokenizer],
-        config: EnsembleConfig = None
+        config: EnsembleConfig = None,
     ):
         if len(models) != len(tokenizers):
             raise ValueError("Number of models must match number of tokenizers")
@@ -31,8 +31,10 @@ class EnsembleGenerator:
         self.logger = logging.getLogger(__name__)
 
         # Validate device availability
-        self.device = torch.device(self.config.device if torch.cuda.is_available() else 'cpu')
-        if self.config.device == 'cuda' and not torch.cuda.is_available():
+        self.device = torch.device(
+            self.config.device if torch.cuda.is_available() else "cpu"
+        )
+        if self.config.device == "cuda" and not torch.cuda.is_available():
             warnings.warn("CUDA requested but not available. Using CPU instead.")
 
         # Set up padding tokens
@@ -53,7 +55,7 @@ class EnsembleGenerator:
                     tokenizer.pad_token = tokenizer.eos_token
                 else:
                     # Last resort: add a new padding token
-                    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+                    tokenizer.add_special_tokens({"pad_token": "[PAD]"})
 
     # Move models to specified device and set to evaluation mode.
     # FIXME: moving all models to GPU at once is not necessary
@@ -83,7 +85,9 @@ class EnsembleGenerator:
         return mappings
 
     # Pad input sequences to the same length and create attention masks.
-    def _pad_inputs(self, token_ids: List[List[int]]) -> Tuple[List[torch.Tensor], torch.Tensor]:
+    def _pad_inputs(
+        self, token_ids: List[List[int]]
+    ) -> Tuple[List[torch.Tensor], torch.Tensor]:
         """
         Returns:
             Tuple[List[torch.Tensor], torch.Tensor]: Padded inputs and attention mask
@@ -114,8 +118,8 @@ class EnsembleGenerator:
         base_vocab_size = len(self.tokenizers[0].get_vocab())
         aligned_logits = torch.full(
             (logits.shape[0], logits.shape[1], base_vocab_size),
-            float('-inf'),
-            device=logits.device
+            float("-inf"),
+            device=logits.device,
         )
 
         for src_idx, tgt_idx in mapping.items():
@@ -129,14 +133,14 @@ class EnsembleGenerator:
 
     # TODO: Be very careful when cleaning token, example: [ĠParis] -> Paris
     def _is_special_token(self, token: str) -> bool:
-      # Define patterns for special tokens
-      special_patterns = [
-          r'^\s+$',  # Only whitespace
-          r'\\n',    # Newlines
-          r'[^\w\s]' # Special characters
-      ]
+        # Define patterns for special tokens
+        special_patterns = [
+            r"^\s+$",  # Only whitespace
+            r"\\n",  # Newlines
+            r"[^\w\s]",  # Special characters
+        ]
 
-      return any(re.search(pattern, token) for pattern in special_patterns)
+        return any(re.search(pattern, token) for pattern in special_patterns)
 
     # Clean a token by removing leading/trailing spaces if configured.
     def _clean_token(self, token: str) -> str:
@@ -149,7 +153,7 @@ class EnsembleGenerator:
         self,
         token_ids: List[List[int]],
         padded_inputs: List[torch.Tensor] = None,
-        attention_masks: List[torch.Tensor] = None
+        attention_masks: List[torch.Tensor] = None,
     ) -> torch.Tensor:
         """Compute and combine logits from all models, aligning vocabularies."""
         base_vocab_size = len(self.tokenizers[0].get_vocab())
@@ -158,16 +162,18 @@ class EnsembleGenerator:
             self.config.batch_size,
             padded_inputs[0].shape[1],
             base_vocab_size,
-            device=self.device
+            device=self.device,
         )
 
         valid_model_count = torch.zeros(
             (self.config.batch_size, padded_inputs[0].shape[1], base_vocab_size),
-            device=self.device
+            device=self.device,
         )
 
         # NOT SURE if i have to pad the inputs. !!! Because of different sizes in tokenized prompts
-        for idx, (model, inputs, attention_mask) in enumerate(zip(self.models, padded_inputs, attention_masks)):
+        for idx, (model, inputs, attention_mask) in enumerate(
+            zip(self.models, padded_inputs, attention_masks)
+        ):
             try:
                 # Process input with attention mask
                 outputs = model(inputs, attention_mask=attention_mask)
@@ -182,8 +188,10 @@ class EnsembleGenerator:
 
                 # TODO: If the union vocab, then we dont need the mask
                 # Add to total logits where valid (not -inf)
-                mask = aligned_logits != float('-inf')
-                total_logits[mask] += aligned_logits[mask] # FIXME: We have to average Probabilities using the logits, not the logits.
+                mask = aligned_logits != float("-inf")
+                total_logits[mask] += aligned_logits[
+                    mask
+                ]  # FIXME: We have to average Probabilities using the logits, not the logits.
                 valid_model_count[mask] += 1
 
             except Exception as e:
@@ -200,7 +208,7 @@ class EnsembleGenerator:
         custom_top_k: int = None,
         min_probability: float = None,
         filter_special: bool = None,
-        strip_spaces: bool = None
+        strip_spaces: bool = None,
     ) -> List[Tuple[str, float]]:
         """
         Generate ensemble predictions for the given prompt.
@@ -216,9 +224,19 @@ class EnsembleGenerator:
             raise ValueError("Prompt must be a non-empty string")
 
         # Use provided parameters or fall back to config defaults
-        filter_special = filter_special if filter_special is not None else self.config.filter_special_tokens
-        strip_spaces = strip_spaces if strip_spaces is not None else self.config.strip_spaces
-        min_prob = min_probability if min_probability is not None else self.config.min_probability
+        filter_special = (
+            filter_special
+            if filter_special is not None
+            else self.config.filter_special_tokens
+        )
+        strip_spaces = (
+            strip_spaces if strip_spaces is not None else self.config.strip_spaces
+        )
+        min_prob = (
+            min_probability
+            if min_probability is not None
+            else self.config.min_probability
+        )
 
         try:
             # Encode prompt with each tokenizer

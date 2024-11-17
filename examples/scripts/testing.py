@@ -16,6 +16,7 @@ model_name = "meta-llama/Llama-3.2-1B"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
+
 # Function to get top-k tokens and probabilities
 def get_top_k(prompt: str, k: int = 10) -> List[Tuple[str, float]]:
     # Tokenize the prompt
@@ -38,6 +39,7 @@ def get_top_k(prompt: str, k: int = 10) -> List[Tuple[str, float]]:
     top_k_tokens = tokenizer.convert_ids_to_tokens(top_k_indices)
 
     return list(zip(top_k_tokens, top_k_probs))
+
 
 # Prompt
 prompt = "What is the capital of France?"
