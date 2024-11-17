@@ -1,4 +1,4 @@
-from consensus import AutoModelMember
+# from consensus import AutoModelMember
 from consensus import Configuration
 from consensus import Ensemble
 
@@ -14,7 +14,7 @@ def main():
     #ensemble.add_member(m1)
     # ensemble.add_member(m2)
 
-    print("hello world")
+    print(ensemble)
 
 if __name__ == "__main__":
     main()
