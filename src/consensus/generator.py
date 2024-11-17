@@ -9,15 +9,14 @@ import warnings
 import re
 
 # local import
-from consensus.configuration import EnsembleConfig
+from consensus.configuration import Configuration
 
-
-class EnsembleGenerator:
+class TokenGenerator:
     def __init__(
         self,
         models: List[AutoModelForCausalLM],
         tokenizers: List[AutoTokenizer],
-        config: EnsembleConfig = None,
+        config: Configuration = None,
     ):
         if len(models) != len(tokenizers):
             raise ValueError("Number of models must match number of tokenizers")
@@ -25,7 +24,7 @@ class EnsembleGenerator:
         # Definitions
         self.models = models
         self.tokenizers = tokenizers
-        self.config = config or EnsembleConfig()
+        self.config = config or Configuration()
 
         # Setup logging
         self.logger = logging.getLogger(__name__)
@@ -46,17 +45,6 @@ class EnsembleGenerator:
         # Move models to device
         self._prepare_models()
 
-    # Setup padding tokens for each tokenizer.
-    def _setup_padding(self):
-        for tokenizer in self.tokenizers:
-            # If tokenizer doesn't have a pad token, use eos token
-            if tokenizer.pad_token is None:
-                if tokenizer.eos_token is not None:
-                    tokenizer.pad_token = tokenizer.eos_token
-                else:
-                    # Last resort: add a new padding token
-                    tokenizer.add_special_tokens({"pad_token": "[PAD]"})
-
     # Move models to specified device and set to evaluation mode.
     # FIXME: moving all models to GPU at once is not necessary
     def _prepare_models(self) -> None:
@@ -64,50 +52,6 @@ class EnsembleGenerator:
         for model in self.models:
             model.to(self.device)
             model.eval()
-
-    # Create mappings between each model's vocabulary and the first model's vocabulary.
-    def _create_vocab_mappings(self) -> List[Dict[int, int]]:
-        """"""
-        mappings = []
-        base_tokenizer = self.tokenizers[0]
-        base_vocab = base_tokenizer.get_vocab()
-
-        for tokenizer in self.tokenizers:
-            current_vocab = tokenizer.get_vocab()
-            mapping = {}
-
-            for token, idx in current_vocab.items():
-                if token in base_vocab:
-                    mapping[idx] = base_vocab[token]
-
-            mappings.append(mapping)
-
-        return mappings
-
-    # Pad input sequences to the same length and create attention masks.
-    def _pad_inputs(
-        self, token_ids: List[List[int]]
-    ) -> Tuple[List[torch.Tensor], torch.Tensor]:
-        """
-        Returns:
-            Tuple[List[torch.Tensor], torch.Tensor]: Padded inputs and attention mask
-        """
-        max_length = max(len(ids) for ids in token_ids)
-        padded_inputs = []
-        attention_masks = []
-
-        for idx, (tokenizer, ids) in enumerate(zip(self.tokenizers, token_ids)):
-            padding_length = max_length - len(ids)
-            pad_token_id = tokenizer.pad_token_id
-
-            # Pad the sequence
-            padded_sequence = ids + [pad_token_id] * padding_length
-            attention_mask = [1] * len(ids) + [0] * padding_length
-
-            padded_inputs.append(torch.tensor([padded_sequence], device=self.device))
-            attention_masks.append(torch.tensor([attention_mask], device=self.device))
-
-        return padded_inputs, attention_masks
 
     # Align logits from a model to the vocabulary space of the first model.
     def _align_logits(self, logits: torch.Tensor, model_idx: int) -> torch.Tensor:
@@ -282,3 +226,78 @@ class EnsembleGenerator:
         except Exception as e:
             self.logger.error(f"Generation failed: {str(e)}")
             raise RuntimeError(f"Generation failed: {str(e)}")
+
+
+class ModelContext:
+    def __init__(self, models, device):
+        self.models = models
+        self.device = device
+
+        # prepare
+        self._prepare_models()
+
+    def _prepare_models(self):
+        for model in self.models:
+            model.to(self.device)
+            model.eval()
+
+
+class TokenizerContext:
+    def __init__(self, tokenizers):
+        self.tokenizers = tokenizers
+        self.vocab_mappings = self._create_vocab_mappings()
+
+    # Create mappings between each model's vocabulary and the first model's vocabulary.
+    def _create_vocab_mappings(self) -> List[Dict[int, int]]:
+        """"""
+        mappings = []
+        base_tokenizer = self.tokenizers[0]
+        base_vocab = base_tokenizer.get_vocab()
+
+        for tokenizer in self.tokenizers:
+            current_vocab = tokenizer.get_vocab()
+            mapping = {}
+
+            for token, idx in current_vocab.items():
+                if token in base_vocab:
+                    mapping[idx] = base_vocab[token]
+
+            mappings.append(mapping)
+
+        return mappings
+
+    # Pad input sequences to the same length and create attention masks.
+    def _pad_inputs(
+        self, token_ids: List[List[int]]
+    ) -> Tuple[List[torch.Tensor], torch.Tensor]:
+        """
+        Returns:
+            Tuple[List[torch.Tensor], torch.Tensor]: Padded inputs and attention mask
+        """
+        max_length = max(len(ids) for ids in token_ids)
+        padded_inputs = []
+        attention_masks = []
+
+        for idx, (tokenizer, ids) in enumerate(zip(self.tokenizers, token_ids)):
+            padding_length = max_length - len(ids)
+            pad_token_id = tokenizer.pad_token_id
+
+            # Pad the sequence
+            padded_sequence = ids + [pad_token_id] * padding_length
+            attention_mask = [1] * len(ids) + [0] * padding_length
+
+            padded_inputs.append(torch.tensor([padded_sequence], device=self.device))
+            attention_masks.append(torch.tensor([attention_mask], device=self.device))
+
+        return padded_inputs, attention_masks
+
+    # Setup padding tokens for each tokenizer.
+    def _setup_padding(self):
+        for tokenizer in self.tokenizers:
+            # If tokenizer doesn't have a pad token, use eos token
+            if tokenizer.pad_token is None:
+                if tokenizer.eos_token is not None:
+                    tokenizer.pad_token = tokenizer.eos_token
+                else:
+                    # Last resort: add a new padding token
+                    tokenizer.add_special_tokens({"pad_token": "[PAD]"})

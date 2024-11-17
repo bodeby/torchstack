@@ -1,4 +1,4 @@
-# consensus (🫧)
+# 🫧 consensus [WIP]
 
 build scaleable ensemble systems for transformer based models.
 

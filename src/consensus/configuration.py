@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class EnsembleConfig:
+class Configuration:
     """Configuration for ensemble generation."""
 
     top_k: int = 10
