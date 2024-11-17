@@ -1,7 +1,7 @@
 [project]
 name = "consensus"
 version = "0.1.0"
-description = "Add your description here"
+description = "Leverage consensus to build transfor based ensembles"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -12,8 +12,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Homepage = "https://github.com/bodeby/consensus"
+Issues = "https://github.com/bodeby/consensus/issues"
 
 [tool.uv]
 dev-dependencies = [
