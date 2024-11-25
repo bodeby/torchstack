@@ -15,6 +15,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/bodeby/consensus"
 Issues = "https://github.com/bodeby/consensus/issues"
+Documentation = "https://bodeby.github.io/consensus/"
 
 [tool.uv]
 dev-dependencies = [
