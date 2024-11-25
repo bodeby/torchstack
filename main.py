@@ -5,8 +5,10 @@ from consensus import AutoModelMember
 from consensus import Configuration
 from consensus import Ensemble
 
-from consensus import UnionVocabularyStrategy
-from consensus import ProjectionStrategy
+# sub-level imports
+# from consensus.voting import AverageAggregator
+# from consensus.tokenization import UnionVocabularyStrategy
+# from consensus.tokenization import ProjectionStrategy
 
 MODEL_ONE = "meta-llama/Llama-3.2-1B-Instruct"
 MODEL_TWO = "Qwen/Qwen2.5-1.5B-Instruct"
