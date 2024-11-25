@@ -4,8 +4,8 @@ from .member import AutoModelMember
 from .ensemble import Ensemble
 
 # alignment strategies
-from .alignment.union_vocabulary import UnionVocabularyStrategy
-from .alignment.projection import ProjectionStrategy
+from .tokenization.union_vocabulary import UnionVocabularyStrategy
+from .tokenization.projection import ProjectionStrategy
 
 # Define the public API
 __all__ = [
