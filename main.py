@@ -27,7 +27,7 @@ def create_union_vocabulary(tokenizers: List[Tokenizer]):
 
     return sorted_union_vocab, union_vocab_index
 
-
+# create mapping from local tokenizer index to union index
 def create_tokenizer_mapping(tokenizer: Tokenizer, vocab: Tensor, index):
     # grab vocabulary from tokenizer
     tk_vocab = tokenizer.get_vocab()
@@ -50,24 +50,22 @@ def main():
 
     # Create common vocabulary
     union_vocab, union_vocab_index = create_union_vocabulary([t1, t2])
-
     t1_mapping = create_tokenizer_mapping(
         tokenizer=t1, vocab=union_vocab, index=union_vocab_index
     )
-
     t2_mapping = create_tokenizer_mapping(
         tokenizer=t2, vocab=union_vocab, index=union_vocab_index
     )
 
-    config = Configuration(temperature=0.7)
-    # strategy = Strategy()
+    config = Configuration(temperature=0.7, voting_stragety="average_voting")
     ensemble = Ensemble(config)
 
     # add ensemble members
-    ensemble.add_member(m1)
-    ensemble.add_member(m2)
+    ensemble.add_member(m1, t1, t1_mapping)
+    ensemble.add_member(m2, t2, t2_mapping)
 
     # add union mpa
+    ensemble.generate(prompt="Finish this sentence: The quick brown ...")
 
     print(ensemble)
 
