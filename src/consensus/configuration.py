@@ -1,8 +1,9 @@
 from pydantic import Enum
 from dataclasses import dataclass
 
+
 class VotingTypes(str, Enum):
-    average = "average_voting",
+    average = ("average_voting",)
     majority = "majority_average_voting"
 
 
