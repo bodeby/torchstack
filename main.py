@@ -32,12 +32,11 @@ def main():
     # ensemble.add_remote_member(url="") # TODO: Implemented remote model usage
 
     # create common vocabulary
-    ensemble.create_union_vocab()
+    ensemble.create_union_vocab() # INVOKED IN THE add_member METHOD
 
     # create mappings from local to union vocabulary
-    # TODO: This should be injected in ensemble class
-    ensemble.create_tokenizer_mapping(t1)
-    ensemble.create_tokenizer_mapping(t2)
+    ensemble.create_tokenizer_mapping(t1) # INVOKED IN THE add_member METHOD
+    ensemble.create_tokenizer_mapping(t2) # INVOKED IN THE add_member METHOD
 
     # generate response with ensemble
     response = ensemble.generate(prompt="Finish this sentence: The quick brown ...")
