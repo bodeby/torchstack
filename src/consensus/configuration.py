@@ -1,4 +1,10 @@
+from pydantic import Enum
 from dataclasses import dataclass
+
+
+class VotingTypes(str, Enum):
+    average = ("average_voting",)
+    majority = "majority_average_voting"
 
 
 @dataclass
@@ -13,3 +19,4 @@ class Configuration:
     pad_token_id: int = None
     filter_special_tokens: bool = True  # New parameter
     strip_spaces: bool = True  # New parameter
+    voting_stragety: VotingTypes

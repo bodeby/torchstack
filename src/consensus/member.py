@@ -1,13 +1,15 @@
 import torch
+import math
 from transformers import AutoModelForCausalLM
 
 
 class AutoModelMember(AutoModelForCausalLM):
-    def __init__(self, weight: float) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.weight = self._is_valid_weight(weight)
+        self.weight = -math.inf
         self.current_device = "cpu"  # Default to CPU
 
+ 
     # verify is member weight is valid
     def _is_valid_weight(self, weight: float):
         if not (0.0 <= weight <= 1.0):
@@ -15,7 +17,7 @@ class AutoModelMember(AutoModelForCausalLM):
         return weight
 
     # Move model to a specified device
-    def _move_to(self, device: str) -> None:
+    def _offload_to_gpu(self, device: str) -> None:
         """
         Move the model to the specified device.
         Args:
@@ -38,11 +40,18 @@ class AutoModelMember(AutoModelForCausalLM):
         Chooses CUDA if available, otherwise falls back to MPS or CPU.
         """
         if torch.cuda.is_available():
-            self.move_to("cuda:0")
+            self._offload_to_gpu()
         elif torch.backends.mps.is_available():
-            self.move_to("mps")
+            self._offload_to_gpu()
         else:
-            self.move_to("cpu")
+            self._offload_to_cpu()
+
+       # add model weights
+    
+    # add weights
+    def modify_weight(self, weight: float):
+        if self._is_valid_weight(weight):
+            self.weight = weight
 
     # Generate tokens while ensuring device readiness
     def generate_token(self, inputs, **generate_kwargs):

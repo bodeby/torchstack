@@ -18,7 +18,10 @@ build scaleable ensemble systems for transformer based models.
 - **torch**: python redis toolkit
 - **loguru**: logging rotation, retention and compression
 
-## Running the service
+## Example Usage
+
+- **text-generation**: poetry run python examples/text-generation/run.py
+- **text-classification**: peotry run python examples/text-classification/run.py 
 
 ```bash
 # starts the service with development settings
