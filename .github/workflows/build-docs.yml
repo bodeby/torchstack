@@ -18,15 +18,15 @@ jobs:
         with:
           python-version: "3.x" # Specify the Python version you need
 
-      - name: Install Poetry
+      - name: Install astral-sh UV
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh | python3 -
+          curl -LsSf https://astral.sh/uv/install.sh | sh
           export PATH="$HOME/.local/bin:$PATH"
 
       - name: Install dependencies
-        run: uv install
+        run: uv pip install .
 
       - name: Deploy to GitHub Pages
         run: |
           cd docs  # Navigate to the root/docs directory
-          poetry run mkdocs gh-deploy --force
+          uvx mkdocs gh-deploy --force
