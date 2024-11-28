@@ -1,4 +1,4 @@
-# Contribute to 🫧 Consensus
+# Contribute to 🫧 torchstack
 
 Everyone is welcome to contribute, and we value everybody's contribution. Code
 contributions are not the only way to help the community. Answering questions, helping others, and improving the documentation are also immensely valuable.
@@ -11,7 +11,7 @@ helped you, or simply ⭐️ the repository to say thank you.
 
 ## Ways to contribute
 
-There are several ways you can contribute to 🫧 Consensus:
+There are several ways you can contribute to 🫧 torchstack:
 
 * Fix outstanding issues with the existing code.
 * Submit issues related to bugs or desired new features.
@@ -37,7 +37,7 @@ feedback.
 
 ### Did you find a bug?
 
-The 🫧 Consensus library is robust and reliable thanks to users who report the problems they encounter.
+The 🫧 torchstack library is robust and reliable thanks to users who report the problems they encounter.
 
 Before you report an issue, we would really appreciate it if you could **make sure the bug was not
 already reported** (use the search bar on GitHub under Issues). Your issue should also be related to bugs in the library itself, and not your code. If you're unsure whether the bug is in your code or the library, please ask in the [forum](https://discuss.huggingface.co/) or on our [discord](https://discord.com/invite/hugging-face-879548962464493619) first. This helps us respond quicker to fixing issues related to the library versus general questions.

@@ -1,7 +1,7 @@
 [project]
-name = "consensus"
+name = "torchstack"
 version = "0.1.0"
-description = "Leverage consensus to build transfor based ensembles"
+description = "Leverage torchstack to build transfor based ensembles"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -14,15 +14,13 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/bodeby/consensus"
-Issues = "https://github.com/bodeby/consensus/issues"
-Documentation = "https://bodeby.github.io/consensus/"
+Homepage = "https://github.com/bodeby/torchstack"
+Issues = "https://github.com/bodeby/torchstack/issues"
+Documentation = "https://bodeby.github.io/torchstack/"
 
 [tool.uv]
 dev-dependencies = [
     "huggingface-hub[cli]>=0.25.1",
-    "ipykernel>=6.29.5",
-    "jupyter>=1.1.1",
     "pytest>=8.3.3",
 ]
 

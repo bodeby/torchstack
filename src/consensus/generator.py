@@ -9,7 +9,7 @@ import warnings
 import re
 
 # local import
-from consensus.configuration import Configuration
+from torchstack.configuration import Configuration
 
 class TokenGenerator:
     def __init__(

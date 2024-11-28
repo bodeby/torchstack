@@ -1,8 +1,8 @@
 
-# 🫧 **Consensus** [work in progress]  
+# 🫧 **TorchStack** [work in progress]  
 **Build scalable ensemble systems for transformer-based models.**
 
-Consensus is a library designed to simplify the creation and deployment of scalable ensemble learning systems for Hugging Face transformers. It provides tools to address challenges like tokenizer mismatch, voting strategies, and model integration, making ensemble learning accessible and efficient for natural language processing tasks.
+torchstack is a library designed to simplify the creation and deployment of scalable ensemble learning systems for Hugging Face transformers. It provides tools to address challenges like tokenizer mismatch, voting strategies, and model integration, making ensemble learning accessible and efficient for natural language processing tasks.
 
 ---
 

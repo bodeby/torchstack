@@ -6,10 +6,10 @@ import torch.nn.functional as F
 from transformers import AutoTokenizer
 
 # library structures
-from consensus.member import AutoModelMember
+from torchstack.member import AutoModelMember
 
-# from consensus.tokenizer import Tokenizer
-from consensus.configuration import Configuration
+# from torchstack.tokenizer import Tokenizer
+from torchstack.configuration import Configuration
 
 
 class Ensemble:

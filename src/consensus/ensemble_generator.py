@@ -9,7 +9,7 @@ import warnings
 import re
 
 # local import
-from consensus.configuration import EnsembleConfig
+from torchstack.configuration import EnsembleConfig
 
 
 class EnsembleGenerator:

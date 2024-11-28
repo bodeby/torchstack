@@ -1,14 +1,14 @@
 from transformers import AutoTokenizer
 
-# from consensus import Tokenizer # todo: since AutoTokenizer is not inheritable just use base.
-from consensus import AutoModelMember
-from consensus import Configuration
-from consensus import Ensemble
+# from torchstack import Tokenizer # todo: since AutoTokenizer is not inheritable just use base.
+from torchstack import AutoModelMember
+from torchstack import Configuration
+from torchstack import Ensemble
 
 # sub-level imports
-# from consensus.voting import AverageAggregator
-# from consensus.tokenization import UnionVocabularyStrategy
-# from consensus.tokenization import ProjectionStrategy
+# from torchstack.voting import AverageAggregator
+# from torchstack.tokenization import UnionVocabularyStrategy
+# from torchstack.tokenization import ProjectionStrategy
 
 MODEL_ONE = "meta-llama/Llama-3.2-1B-Instruct"
 MODEL_TWO = "Qwen/Qwen2.5-1.5B-Instruct"

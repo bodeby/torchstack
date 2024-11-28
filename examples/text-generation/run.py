@@ -1,5 +1,5 @@
-from consensus import Stage
-from consensus import TextLayer
+from torchstack import Stage
+from torchstack import TextLayer
 
 
 def main():
