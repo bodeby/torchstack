@@ -161,10 +161,10 @@ class Ensemble:
                 inputs.append(new_input)
 
             # Add the sampled token to the generated text
-            generated_text += t1.decode([t1_token_id])  # Use tokenizer 1 for decoding
+            generated_text += self.tokenizers[0].decode([token_ids[0]])  # Use tokenizer 1 for decoding
 
             # Stopping criteria: e.g., max length or EOS token
-            if sampled_token in [t1.eos_token, t2.eos_token] or len(generated_text.split()) >= max_length:
+            if sampled_token in [t.eos_token for t in self.tokenizers] or len(generated_text.split()) >= max_length:
                 break
         
         return generated_text

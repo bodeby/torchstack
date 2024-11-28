@@ -1,5 +1,6 @@
 from transformers import PreTrainedModel
 
+
 # wrapper for pretrained model
 class HFEnsembleModel(PreTrainedModel):
     def __init__(self, config, ensemble_model):
