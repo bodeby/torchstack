@@ -1,11 +1,11 @@
 [project]
 name = "torchstack"
-version = "0.1.2"
+version = "0.1.3"
 description = "Leverage torchstack to build transfor based ensembles"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "numpy>=2.1.2",
+    "numpy<2.0,>=1.23.5",  # Compatible with most libraries in Colab
     "pydantic>=2.10.1",
     "ruff>=0.7.4",
     "torch>=2.4.1",
