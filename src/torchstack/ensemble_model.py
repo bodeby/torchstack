@@ -1,9 +1,12 @@
-from transformers import PreTrainedModel
+from transformers import PreTrainedModel, PreTrainedConfig
+from .models.causal_model import EnsembleModelForCausalLM
 
 
 # wrapper for pretrained model
 class HFEnsembleModel(PreTrainedModel):
-    def __init__(self, config, ensemble_model):
+    def __init__(
+        self, config: PreTrainedConfig, ensemble_model: EnsembleModelForCausalLM
+    ):
         super().__init__(config)
         self.ensemble_model = ensemble_model
 

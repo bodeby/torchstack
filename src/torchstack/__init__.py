@@ -2,7 +2,7 @@
 from .configuration import Configuration
 from .member import AutoModelMember
 from .ensemble import Ensemble
-from .ensenmle_model import HFEnsembleModel
+from .ensemble_model import HFEnsembleModel
 
 # alignment strategies
 from .tokenization.union_vocabulary import UnionVocabularyStrategy
