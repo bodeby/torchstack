@@ -3,7 +3,6 @@ from dataclasses import dataclass
 @dataclass
 class Configuration:
     """Configuration for ensemble generation."""
-
     top_k: int = 10
     min_probability: float = 0.001
     batch_size: int = 1
