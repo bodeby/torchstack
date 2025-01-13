@@ -18,7 +18,6 @@ from huggingface_hub import login
 MODEL_ONE = "meta-llama/Llama-3.2-1B-Instruct"
 MODEL_TWO = "Qwen/Qwen2.5-1.5B-Instruct"
 
-
 def main():
     # Setup specialized Ensemble Member extending: AutoModelForCausalLM (transformers)
     m1 = AutoModelMember.from_pretrained(MODEL_ONE)
