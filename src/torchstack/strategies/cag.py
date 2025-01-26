@@ -1,7 +1,13 @@
+# Paper title: Breaking the Ceiling of the LLM Community by Treating Token Generation as a Classification for Ensembling
+# arXiv: 2406.1285v2 
+# Authors: Yao-Ching Yu, Chun-Chih Kuo, Ziqi Ye, Yu-Cheng Chang, Yueh-Se Li
+
+from .base import BaseStrategy
+
 import torch
 import numpy as np
 
-class CaGEnsembleModelForCausalLM(torch.nn.Module):
+class GenerationAsClassification(BaseStrategy):
     def __init__(self, models, tokenizers, device=None):
         super().__init__()
         self.models = torch.nn.ModuleList(models).to(device)

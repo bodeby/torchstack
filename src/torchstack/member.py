@@ -1,6 +1,6 @@
+from transformers import AutoModelForCausalLM
 import torch
 import math
-from transformers import AutoModelForCausalLM
 
 
 class AutoModelMember(AutoModelForCausalLM):
@@ -8,7 +8,6 @@ class AutoModelMember(AutoModelForCausalLM):
         super().__init__()
         self.weight = -math.inf
         self.current_device = "cpu"  # Default to CPU
-
  
     # verify is member weight is valid
     def _is_valid_weight(self, weight: float):

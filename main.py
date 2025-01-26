@@ -11,6 +11,7 @@ from torchstack import HFEnsembleModel
 from huggingface_hub import login
 
 # sub-level imports
+from torchstack.strategies import cag
 # from torchstack.voting import AverageAggregator
 # from torchstack.tokenization import UnionVocabularyStrategy
 # from torchstack.tokenization import ProjectionStrategy
@@ -28,7 +29,7 @@ def main():
     t2 = AutoTokenizer.from_pretrained(MODEL_TWO)
 
     config = Configuration(temperature=0.7, voting_stragety="average_voting")
-    ensemble = Ensemble(config)
+    ensemble = Ensemble(config=config, strategy=cag)
 
     # add ensemble members
     ensemble.add_member(model=m1, tokenizer=t1)
@@ -55,6 +56,7 @@ def main():
         model_names=["meta-llama/Llama-3.2-3B-Instruct", "Qwen/Qwen2.5-3B-Instruct"],
         weights=[0.6, 0.4],
     )
+    
     config = AutoConfig.from_pretrained("meta-llama/Llama-3.2-3B-Instruct")
     hf_model = HFEnsembleModel(config, ensemble_model)
 
