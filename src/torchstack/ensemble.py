@@ -22,6 +22,7 @@ class Ensemble:
         self.vocabulary: set = None
         self.vocabulary_index: dict = None
         self.aligned: bool = False
+        self.prepared: bool = False
 
     def __repr__(self):
         # Create a string representation of the ensemble architecture
@@ -70,25 +71,36 @@ class Ensemble:
 
         self.tokenizer_maps.append(mapping)
 
-    def add_member(self, model: AutoModelMember, tokenizer: AutoTokenizer):
-        if not isinstance(model, AutoModelMember):
-            raise ValueError("Member must be an instance of AutoModelMember")
+    def prepare(self):
+        if not self.aligned:
+            raise ValueError("Tokenizers must be aligned before generating responses.")
+        
 
-        # handle member models
-        self.members.append(model)
-
-        if not isinstance(tokenizer, AutoTokenizer):
-            raise ValueError("Tokenizer must be an instance of AutoTokenizer")
-
-        # handle member tokenizers
-        self.tokenizers.append(tokenizer)
+        # TODO: move to 
         self._update_union_vocab()
         self._create_tokenizer_mapping(tokenizer)
 
+    def add_member(self, model: AutoModelMember, tokenizer: AutoTokenizer):
+        # guard 1: 
+        if self.prepared:
+            raise ValueError("The ensemble has been prepared and therefore locked for furhter additions")
+        
+        # guard 2:
+        if not isinstance(model, AutoModelMember):
+            raise ValueError("Member must be an instance of AutoModelMember")
+
+        # guard 3: 
+        if not isinstance(tokenizer, AutoTokenizer):
+            raise ValueError("Tokenizer must be an instance of AutoTokenizer")
+        
+        # add new member models and tokenizers
+        self.members.append(model)
+        self.tokenizers.append(tokenizer)
+
     @torch.no_grad()
     def generate(self, prompt: str, max_length: int = 10):
-        if not self.aligned:
-            raise ValueError("Tokenizers must be aligned before generating responses.")
+        if not self.prepared:
+            raise ValueError("The Ensemble must be prepared and locked before usage")
         
         # Step 1: Tokenize input prompt
         #I1 = t1(prompt, return_tensors="pt").input_ids.to('cuda')  # Token IDs for model 1
@@ -295,6 +307,140 @@ class EnsembleModelForCausalLM(torch.nn.Module):
           # step 9: handle stopping criterion
           if sampled_token in [self.tokenizrs[0].eos_token, self.tokenizrs[1].eos_token]:
               print(f"hit eos token: {self.tokenizrs[0].eos_token} or {self.tokenizrs[1].eos_token}")
+              break
+
+        return generated_text
+
+
+class EnsembleModelForCausalLM(torch.nn.Module):
+    def __init__(self, models, tokenizers, device=None):
+        super().__init__()
+        self.models = torch.nn.ModuleList(models).to(device)
+        self.tokenizers = tokenizers
+        self.device = device
+        self.weights = None  # Initialized during generate
+
+        # Union Vocabulary, not sure if this should be hosted here, seperate strategy
+        self.union_vocab = None
+        self.union_vocab_with_index = None
+        self.mappings = []
+
+        # Automatically create vocab and mappings during initialization
+        self._create_vocab()
+        self._create_mappings()
+
+    def _create_vocab(self):
+        vocabularies = [tokenizer.get_vocab() for tokenizer in self.tokenizers]
+        union_vocab = set()
+
+        for vocab in vocabularies:
+            union_vocab.update(vocab.keys())
+
+        self.union_vocab = sorted(union_vocab)
+        self.union_vocab_with_index = {token: idx for idx, token in enumerate(self.union_vocab)}
+
+    def _create_mappings(self):
+        if not self.tokenizers:
+            raise ValueError("Tokenizers must be provided.")
+        if not self.union_vocab_with_index:
+            raise ValueError("Union vocabulary must be created first.")
+
+        self.mappings = []
+        for tokenizer in self.tokenizers:
+            local_vocab = tokenizer.get_vocab()
+            mapping = np.zeros(len(local_vocab), dtype=int)
+            for token, index in local_vocab.items():
+                mapping[index] = self.union_vocab_with_index.get(token, -1)  # Use -1 for missing tokens
+            self.mappings.append(torch.tensor(mapping, device=self.device))
+
+    @torch.no_grad()
+    def generate(self, prompt, max_length=25):
+        generated_text = prompt
+
+        # create input ids
+        input_ids = [tokenizer.encode(prompt, return_tensors="pt").to(self.device) for tokenizer in self.tokenizers]
+
+        # check for device
+        if device is None:
+            self.device = input_ids[0].device
+
+        # Initialize weights if not set
+        if self.weights is None:
+            self.weights = torch.tensor([1.0 / len(self.models)] * len(self.models), device=self.device)
+
+        # Prepare inputs for all models
+        model_inputs = [ids.clone() for ids in input_ids]
+
+        while len(generated_text.split()) < max_length:
+          # step 1: generate next-token probabilities
+          computed_probs = []
+          for model, index in zip(self.models, range(len(self.models))):
+            tokenized = input_ids[index]
+            p = torch.nn.functional.softmax(model(tokenized).logits[:, -1, :], dim=-1)
+
+            # add computed probabilities
+            computed_probs.append(p)
+
+          # step 2: map probabilities to the union vocabulary
+          mapped_probs = []
+          for prob, index in zip(computed_probs, range(len(computed_probs))):
+            mapping = self.mappings[index]
+            q = torch.zeros(len(self.union_vocab), device=prob.device)
+            q.scatter_add_(0, torch.tensor(mapping, device=prob.device), prob.squeeze(0))
+
+            # add mapped probiliities
+            mapped_probs.append(q)
+
+          # step 3: average probabilities to get ensemble distribution
+          # q = (q1 + q2) / 2  # Ensemble by averaging
+          average = torch.stack(mapped_probs).mean(dim=0)
+
+          # step 4: Sample the next token
+          next_token_idx = torch.multinomial(average.squeeze(0), num_samples=1).item()  # Scalar index
+          sampled_token = list(self.union_vocab_with_index.keys())[next_token_idx]
+
+          print(sampled_token)
+
+          # Step 5: convert sampled token back to token IDs for each tokenizer
+          vocabularies = [tokenizer.get_vocab() for tokenizer in self.tokenizers]
+          token_ids = []
+          for tokenizer, index in zip(self.tokenizers, range(len(self.tokenizers))):
+            token_id = tokenizer.convert_tokens_to_ids(sampled_token) if sampled_token in vocabularies[index] else tokenizer.unk_token_id
+            token_ids.append(token_id)
+
+          # step 6: decode and append, TODO: fix manual decoding
+
+          if sampled_token in vocabularies[0]:
+              generated_token = self.tokenizers[0].decode([self.tokenizers[0].convert_tokens_to_ids(sampled_token)])
+          elif sampled_token in vocabularies[1]:
+              generated_token = self.tokenizers[1].decode([self.tokenizers[1].convert_tokens_to_ids(sampled_token)])
+          else:
+              generated_token = ""  # Handle missing tokens
+
+          # step 7: append decoded token to generated text
+          generated_text += generated_token if sampled_token not in [t1.eos_token, t2.eos_token] else ""
+
+          # step 8: update inputs, so that next iter gets correct text
+          t1_token_id = self.tokenizers[0].convert_tokens_to_ids(sampled_token) or self.tokenizers[0].unk_token_id
+          t2_token_id = self.tokenizers[1].convert_tokens_to_ids(sampled_token) or self.tokenizers[1].unk_token_id
+
+          # step 9.1: update input_ids
+          if t1_token_id is None:
+            t1_token_id = t1.unk_token_id if t1.unk_token_id is not None else 0  # Fallback to 0 if unk_token_id is None
+            print(f"Warning: Token '{sampled_token}' not found in t1 vocabulary. Using {t1_token_id} instead.")
+          else:
+            I1 = torch.cat([input_ids[0], torch.tensor([[t1_token_id]], device=input_ids[0].device)], dim=-1)
+
+          # step 9.2: update input_ids
+          if t2_token_id is None:
+            t2_token_id = t2.unk_token_id if t2.unk_token_id is not None else 0  # Fallback to 0 if unk_token_id is None
+            print(f"Warning: Token '{sampled_token}' not found in t1 vocabulary. Using {t2_token_id} instead.")
+          else:
+            I2 = torch.cat([input_ids[1], torch.tensor([[t2_token_id]], device=input_ids[1].device)], dim=-1)
+
+          # step 9: handle stopping criterion
+          if sampled_token in [t1.eos_token, t2.eos_token]:
+              print(f"hit eos token: {t1.eos_token} or {t2.eos_token}")
               break
 
         return generated_text
