@@ -21,12 +21,6 @@ class EnsembleForCausalLM(torch.nn.Module):
         if self.locked:
             raise ValueError("The ensemble is locked and cannot accept new members.")
         
-        # if not isinstance(model, AutoModelMember):
-        #     raise ValueError("Model must be an instance of AutoModelMember.")
-        
-        # if not isinstance(tokenizer, AutoTokenizer):
-        #     raise ValueError("Tokenizer must be an instance of AutoTokenizer.")
-        
         self.members.append((model.to(self.device), tokenizer))
 
     # BUILDER: handles the ensemble preparation and locking
@@ -42,12 +36,6 @@ class EnsembleForCausalLM(torch.nn.Module):
 
         # Dependency injection: Pass members to the strategy
         models, tokenizers = zip(*self.members)  # Unzip members into separate lists
-
-        # try:
-        #     print("Initializing Base strategy...")
-        #     self.strategy.initialize(models=models, tokenizers=tokenizers, device=self.device)
-        # except Exception as e:
-        #     raise ValueError(f"INIT: could not initialize strategy: {e}")
         
         try:
             print("Preparing Specialization strategy...")

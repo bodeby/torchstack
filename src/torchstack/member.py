@@ -9,16 +9,6 @@ class AutoModelMember(AutoModelForCausalLM):
         self.weight = -math.inf
         self.current_device = "cpu"  # Default to CPU
 
-    # @classmethod
-    # def from_pretrained(cls, pretrained_model_name_or_path, *model_args, **kwargs):
-    #     """
-    #     Override the from_pretrained method to return an instance of AutoModelMember.
-    #     """
-    #     model = super().from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
-    #     model.__class__ = cls  # Change the class of the returned model to AutoModelMember
-    #     model.weight = -math.inf
-    #     model.current_device = "cpu"
-    #     return model
 
     # verify is member weight is valid
     def _is_valid_weight(self, weight: float):
