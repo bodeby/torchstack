@@ -20,7 +20,6 @@ class EnsembleForCausalLM(torch.nn.Module):
     def add_member(self, model: AutoModelMember, tokenizer: AutoTokenizer):
         if self.locked:
             raise ValueError("The ensemble is locked and cannot accept new members.")
-        
         self.members.append((model.to(self.device), tokenizer))
 
     # BUILDER: handles the ensemble preparation and locking

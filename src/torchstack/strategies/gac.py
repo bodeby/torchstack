@@ -6,11 +6,14 @@ import torch
 import numpy as np
 
 # base class with required abstractclasses
-from torchstack.strategies import BaseStrategy
+# from torchstack.strategies import BaseStrategy
 
-class GenerationAsClassification(BaseStrategy):
+class GenerationAsClassification(torch.nn.Module):
     def __init__(self):
         super().__init__()
+        self.models = None
+        self.tokenizers = None
+        self.device = None
         self.initialized: bool = False
 
         # Strategy-specific attributes
@@ -71,8 +74,11 @@ class GenerationAsClassification(BaseStrategy):
         self.initialized = True
         print("Strategy preparation complete.")
 
-    def initialize(self, models=None, tokenizers=None, device=None):
-        super().initialize(models=models, tokenizers=tokenizers, device=device)
+    def initialize(self, models, tokenizers, device):
+        self.models = models
+        self.tokenizers = tokenizers
+        self.device = device
+        
 
     @torch.no_grad()
     def generate(self, prompt, max_length=25):        
