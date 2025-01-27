@@ -1,7 +1,7 @@
 # base-level libaries utilities
 from .configuration import Configuration
 from .member import AutoModelMember
-from .ensemble import Ensemble
+from .ensemble import EnsembleForCausalLM
 from .distribute import EnsembleDistributable
 
 # alignment strategies
@@ -15,7 +15,7 @@ from .models.causal_model import EnsembleModelForCausalLM
 __all__ = [
     "Configuration",
     "AutoModelMember",
-    "Ensemble",
+    "EnsembleForCausalLM",
 
     # alignment strategies
 #    "UnionVocabularyStrategy",
