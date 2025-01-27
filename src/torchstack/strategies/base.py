@@ -14,7 +14,7 @@ class BaseStrategy(torch.nn.Module, ABC):
         self.device = device
 
     @abstractmethod
-    def prepare(self, purchase):
+    def prepare(self):
         """Abstract method that must be implemented by subclasses"""
         pass
 
