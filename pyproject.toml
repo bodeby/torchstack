@@ -1,6 +1,6 @@
 [project]
 name = "torchstack"
-version = "0.1.4"
+version = "0.1.6"
 description = "Leverage torchstack to build transfor based ensembles"
 readme = "README.md"
 requires-python = ">=3.10"

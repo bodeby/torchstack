@@ -9,7 +9,7 @@ import numpy as np
 from torchstack.strategies import BaseStrategy
 
 class GenerationAsClassification(BaseStrategy):
-    def __init__(self, models, tokenizers, device=None):
+    def __init__(self, models=None, tokenizers=None, device=None):
         super().__init__()
         self.models = models
         self.tokenizers = tokenizers
