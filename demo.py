@@ -1,25 +1,26 @@
+import torch
 from transformers import AutoTokenizer, AutoConfig
-
-# from torchstack import Tokenizer # todo: since AutoTokenizer is not inheritable just use base.
 from torchstack import AutoModelMember
 from torchstack import Configuration
-from torchstack import Ensemble
-
 from torchstack import EnsembleModelForCausalLM
-from torchstack import HFEnsembleModel
+
+# sub-level imports
+from torchstack.strategies import GenerationAsClassification
+
+# for model distribution
+# from torchstack import EnsembleModelForCausalLM
+from torchstack import EnsembleDistributable
 
 from huggingface_hub import login
 
-# sub-level imports
-from torchstack.strategies import cag
-# from torchstack.voting import AverageAggregator
-# from torchstack.tokenization import UnionVocabularyStrategy
-# from torchstack.tokenization import ProjectionStrategy
-
+# constants
 MODEL_ONE = "meta-llama/Llama-3.2-1B-Instruct"
 MODEL_TWO = "Qwen/Qwen2.5-1.5B-Instruct"
+MODEL_ENS = "Qwen-2.5-Llama-3.2-cag-ensemble"
 
 def main():
+    device = ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+
     # Setup specialized Ensemble Member extending: AutoModelForCausalLM (transformers)
     m1 = AutoModelMember.from_pretrained(MODEL_ONE)
     m2 = AutoModelMember.from_pretrained(MODEL_TWO)
@@ -28,25 +29,20 @@ def main():
     t1 = AutoTokenizer.from_pretrained(MODEL_ONE)
     t2 = AutoTokenizer.from_pretrained(MODEL_TWO)
 
+
     config = Configuration(temperature=0.7, voting_stragety="average_voting")
-    ensemble = Ensemble(config=config, strategy=cag)
+    strategy = GenerationAsClassification()
+    ensemble = EnsembleModelForCausalLM(config=config, strategy=strategy, device=device)
 
     # add ensemble members
     ensemble.add_member(model=m1, tokenizer=t1)
     ensemble.add_member(model=m2, tokenizer=t2)
-    # ensemble.add_remote_member(url="") # TODO: Implemented remote model usage
 
-    # create common vocabulary
-    ensemble.create_union_vocab()  # INVOKED IN THE add_member METHOD
-
-    # create mappings from local to union vocabulary
-    ensemble.create_tokenizer_mapping(t1)  # INVOKED IN THE add_member METHOD
-    ensemble.create_tokenizer_mapping(t2)  # INVOKED IN THE add_member METHOD
+    # prepare model for usage
+    ensemble.prepare()
 
     # generate response with ensemble
     response = ensemble.generate(prompt="Finish this sentence: The quick brown ...")
-
-    print(ensemble)  # repr print for ensemble setup
     print(response)  # responses from transformer ensemble
 
     ### EXAMPLE WORKFLOW FOR TRAINING AND PUSHING MODEL
@@ -57,12 +53,13 @@ def main():
         weights=[0.6, 0.4],
     )
     
-    config = AutoConfig.from_pretrained("meta-llama/Llama-3.2-3B-Instruct")
-    hf_model = HFEnsembleModel(config, ensemble_model)
+    config = AutoConfig.from_pretrained(MODEL_ONE)
+    hf_model = EnsembleDistributable(config, ensemble_model) # Needs a new name
 
     # Authenticate with Hugginface Before
     login(token="<insert_token>")
-    hf_model.save_pretrained("./smol-llama-1.5b-ensemble")
+    hf_model.save_pretrained(MODEL_ENS)
+    hf_model.push_to_hub(f"frederikbode/{MODEL_ENS}")
 
 
 if __name__ == "__main__":

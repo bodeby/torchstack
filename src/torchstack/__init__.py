@@ -1,12 +1,12 @@
 # base-level libaries utilities
 from .configuration import Configuration
 from .member import AutoModelMember
-from .ensemble import Ensemble
-from .ensemble_model import HFEnsembleModel
+from .ensemble import EnsembleForCausalLM
+from .distribute import EnsembleDistributable
 
 # alignment strategies
-from .tokenization.union_vocabulary import UnionVocabularyStrategy
-from .tokenization.projection import ProjectionStrategy
+# from .tokenization.union_vocabulary import UnionVocabularyStrategy
+# from .tokenization.projection import ProjectionStrategy
 
 # models
 from .models.causal_model import EnsembleModelForCausalLM
@@ -15,13 +15,13 @@ from .models.causal_model import EnsembleModelForCausalLM
 __all__ = [
     "Configuration",
     "AutoModelMember",
-    "Ensemble",
+    "EnsembleForCausalLM",
 
     # alignment strategies
-    "UnionVocabularyStrategy",
-    "ProjectionStrategy",
+#    "UnionVocabularyStrategy",
+#    "ProjectionStrategy",
     
     # models
-    "HFEnsembleModel",
+    "EnsembleDistributable",
     "EnsembleModelForCausalLM",
 ]
