@@ -43,15 +43,15 @@ class EnsembleForCausalLM(torch.nn.Module):
         # Dependency injection: Pass members to the strategy
         models, tokenizers = zip(*self.members)  # Unzip members into separate lists
 
-        try:
-            print("Initializing Base strategy...")
-            self.strategy.initialize(models=models, tokenizers=tokenizers, device=self.device)
-        except Exception as e:
-            raise ValueError(f"INIT: could not initialize strategy: {e}")
+        # try:
+        #     print("Initializing Base strategy...")
+        #     self.strategy.initialize(models=models, tokenizers=tokenizers, device=self.device)
+        # except Exception as e:
+        #     raise ValueError(f"INIT: could not initialize strategy: {e}")
         
         try:
             print("Preparing Specialization strategy...")
-            self.strategy.prepare()  # Explicitly call the strategy's prepare method
+            self.strategy.prepare(models=models, tokenizers=tokenizers, device=self.device)  # Explicitly call the strategy's prepare method
         except Exception as e:
             raise ValueError(f"PREPARE: Could not prepare strategy: {e}")
         

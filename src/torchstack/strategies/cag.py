@@ -12,6 +12,9 @@ class GenerationAsClassification(BaseStrategy):
     def __init__(self):
         super().__init__()
         self.initialized: bool = False
+        self.models = None
+        self.tokenizers = None
+        self.device = None
 
         # Strategy-specific attributes
         self.union_vocab = None
@@ -41,10 +44,14 @@ class GenerationAsClassification(BaseStrategy):
                 )  # Use -1 for missing tokens
             self.mappings.append(torch.tensor(mapping, device=self.device))
 
-    def prepare(self):
+    def prepare(self, models, tokenizers, device):
         """Prepare the strategy by creating vocabularies and mappings."""
         if self.initialized:
             raise RuntimeError("Strategy has already been prepared.")
+        
+        self.models = models
+        self.tokenizers = tokenizers
+        self.device = device
 
         # Check that all necessary attributes are set
         if not self.models or not self.tokenizers or not self.device:
