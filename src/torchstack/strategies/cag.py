@@ -44,10 +44,6 @@ class GenerationAsClassification(BaseStrategy):
                 )  # Use -1 for missing tokens
             self.mappings.append(torch.tensor(mapping, device=self.device))
 
-
-    def initialize(self, models=None, tokenizers=None, device=None):
-        super().initialize(models=models, tokenizers=tokenizers, device=device)
-
     def prepare(self):
         """Prepare the strategy by creating vocabularies and mappings."""
         if self.initialized:
@@ -74,8 +70,18 @@ class GenerationAsClassification(BaseStrategy):
         self.initialized = True
         print("Strategy preparation complete.")
 
+    def initialize(self, models=None, tokenizers=None, device=None):
+        super().initialize(models=models, tokenizers=tokenizers, device=device)
+
+
     @torch.no_grad()
     def generate(self, prompt, max_length=25):
+
+        try:
+            self.prepare()  # Explicitly call the prepare method
+        except Exception as e:
+            raise ValueError(f"PREPARE: Could not prepare strategy: {e}")
+        
         generated_text = prompt
 
         # create input ids
