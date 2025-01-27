@@ -94,6 +94,10 @@ class GenerationAsClassification(BaseStrategy):
                 [1.0 / len(self.models)] * len(self.models), device=self.device
             )
 
+        # Check if mappings are empty
+        if len(self.mappings) == 0:
+            raise ValueError("Mappings are empty. Ensure `prepare` has been called.")
+
         while len(generated_text.split()) < max_length:
             # Step 1: Compute next-token probabilities for each model
             computed_probs = [
@@ -101,12 +105,19 @@ class GenerationAsClassification(BaseStrategy):
                 for model, input_id in zip(self.models, input_ids)
             ]
 
+            # Check if computed_probs is empty
+            if len(computed_probs) == 0:
+                raise ValueError("Computed probabilities are empty. Ensure models and inputs are properly initialized.")
+
             # Step 2: Map probabilities to the union vocabulary
             mapped_probs = []
             for prob, mapping in zip(computed_probs, self.mappings):
                 q = torch.zeros(len(self.union_vocab), device=prob.device)
                 q.scatter_add_(0, mapping, prob.squeeze(0))
                 mapped_probs.append(q)
+
+            if len(mapped_probs) == 0:
+                raise ValueError("Mapped probabilities are empty. Ensure mappings and computed_probs are valid.")
 
             # Step 3: Average probabilities
             average_probs = torch.stack(mapped_probs).mean(dim=0)
