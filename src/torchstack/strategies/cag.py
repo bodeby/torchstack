@@ -43,22 +43,35 @@ class GenerationAsClassification(BaseStrategy):
                 )  # Use -1 for missing tokens
             self.mappings.append(torch.tensor(mapping, device=self.device))
 
+
     def initialize(self, models=None, tokenizers=None, device=None):
-        # Call the base class's initialize method
         super().initialize(models=models, tokenizers=tokenizers, device=device)
 
-        # Automatically create vocab and mappings during initialization
+    def prepare(self):
+        """Prepare the strategy by creating vocabularies and mappings."""
+        if self.initialized:
+            raise RuntimeError("Strategy has already been prepared.")
+
+        # Check that all necessary attributes are set
+        if not self.models or not self.tokenizers or not self.device:
+            raise ValueError("Strategy must be initialized with models, tokenizers, and a device before preparing.")
+
+        # Create the union vocabulary and mappings
         try:
             self._create_vocab()
+            print("Union vocabulary created successfully.")
         except Exception as e:
-            print(f"Strategy: Could not create union vocabulary: {e}")
+            raise RuntimeError(f"Failed to create union vocabulary: {e}")
 
         try:
             self._create_mappings()
+            print("Vocabulary mappings created successfully.")
         except Exception as e:
-            print(f"Strategy: Could not create vocabulary mappings: {e}")
+            raise RuntimeError(f"Failed to create vocabulary mappings: {e}")
 
+        # Mark the strategy as initialized
         self.initialized = True
+        print("Strategy preparation complete.")
 
     @torch.no_grad()
     def generate(self, prompt, max_length=25):
@@ -79,9 +92,6 @@ class GenerationAsClassification(BaseStrategy):
             self.weights = torch.tensor(
                 [1.0 / len(self.models)] * len(self.models), device=self.device
             )
-
-        # Prepare inputs for all models
-        model_inputs = [ids.clone() for ids in input_ids]
 
         while len(generated_text.split()) < max_length:
             # Step 1: Compute next-token probabilities for each model

@@ -15,7 +15,6 @@ class EnsembleForCausalLM(torch.nn.Module):
         self.members = []
         self.strategy: BaseStrategy = strategy
         self.locked: bool = False
-
     
     # BUILDER: handles new models in the ensemble
     def add_member(self, model: AutoModelMember, tokenizer: AutoTokenizer):
