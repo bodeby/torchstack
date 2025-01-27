@@ -9,11 +9,8 @@ import numpy as np
 from torchstack.strategies import BaseStrategy
 
 class GenerationAsClassification(BaseStrategy):
-    def __init__(self, models=None, tokenizers=None, device=None):
+    def __init__(self):
         super().__init__()
-        self.models = models
-        self.tokenizers = tokenizers
-        self.device = device
         self.initialized: bool = False
 
         # Strategy-specific attributes
@@ -75,13 +72,7 @@ class GenerationAsClassification(BaseStrategy):
 
 
     @torch.no_grad()
-    def generate(self, prompt, max_length=25):
-
-        try:
-            self.prepare()  # Explicitly call the prepare method
-        except Exception as e:
-            raise ValueError(f"PREPARE: Could not prepare strategy: {e}")
-        
+    def generate(self, prompt, max_length=25):        
         generated_text = prompt
 
         # create input ids
