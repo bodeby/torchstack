@@ -48,6 +48,11 @@ class EnsembleForCausalLM(torch.nn.Module):
         except Exception as e:
             raise ValueError(f"could not initialize strategy: {e}")
         
+        try:
+            self.strategy.prepare()  # Explicitly call the prepare method
+        except Exception as e:
+            raise ValueError(f"Could not prepare strategy: {e}")
+        
         # lock the model to prevent further changes
         self.locked = True
 
