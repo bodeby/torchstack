@@ -20,6 +20,7 @@ class GenerationAsClassification(BaseStrategy):
         self.union_vocab = None
         self.union_vocab_with_index = None
         self.mappings = []
+        self.weights = None  # Initialize weights as None
 
     def _create_vocab(self):
         vocabularies = [tokenizer.get_vocab() for tokenizer in self.tokenizers]
