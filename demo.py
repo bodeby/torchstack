@@ -1,14 +1,14 @@
+import torch
 from transformers import AutoTokenizer, AutoConfig
-
 from torchstack import AutoModelMember
 from torchstack import Configuration
-from torchstack import Ensemble
+from torchstack import EnsembleModelForCausalLM
 
 # sub-level imports
 from torchstack.strategies import GenerationAsClassification
 
 # for model distribution
-from torchstack import EnsembleModelForCausalLM
+# from torchstack import EnsembleModelForCausalLM
 from torchstack import EnsembleDistributable
 
 from huggingface_hub import login
@@ -19,6 +19,8 @@ MODEL_TWO = "Qwen/Qwen2.5-1.5B-Instruct"
 MODEL_ENS = "Qwen-2.5-Llama-3.2-cag-ensemble"
 
 def main():
+    device = ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+
     # Setup specialized Ensemble Member extending: AutoModelForCausalLM (transformers)
     m1 = AutoModelMember.from_pretrained(MODEL_ONE)
     m2 = AutoModelMember.from_pretrained(MODEL_TWO)
@@ -30,7 +32,7 @@ def main():
 
     config = Configuration(temperature=0.7, voting_stragety="average_voting")
     strategy = GenerationAsClassification()
-    ensemble = Ensemble(config=config, strategy=strategy)
+    ensemble = EnsembleModelForCausalLM(config=config, strategy=strategy, device=device)
 
     # add ensemble members
     ensemble.add_member(model=m1, tokenizer=t1)

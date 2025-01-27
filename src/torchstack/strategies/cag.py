@@ -11,9 +11,12 @@ from torchstack.strategies import BaseStrategy
 class GenerationAsClassification(BaseStrategy):
     def __init__(self, models, tokenizers, device=None):
         super().__init__()
+        self.models = models
+        self.tokenizers = tokenizers
+        self.device = device
         self.initialized: bool = False
 
-        # strategy specific attributes
+        # Strategy-specific attributes
         self.union_vocab = None
         self.union_vocab_with_index = None
         self.mappings = []
@@ -40,17 +43,20 @@ class GenerationAsClassification(BaseStrategy):
                 )  # Use -1 for missing tokens
             self.mappings.append(torch.tensor(mapping, device=self.device))
 
-    def initialize(self):
+    def initialize(self, models=None, tokenizers=None, device=None):
+        # Call the base class's initialize method
+        super().initialize(models=models, tokenizers=tokenizers, device=device)
+
         # Automatically create vocab and mappings during initialization
         try:
-          self._create_vocab()
+            self._create_vocab()
         except Exception as e:
-            print(f"strategy: could not create union vocabulary: {e}")
+            print(f"Strategy: Could not create union vocabulary: {e}")
 
         try:
-          self._create_mappings()
+            self._create_mappings()
         except Exception as e:
-            print(f"strategy: could not create vocabulary mappings: {e}")
+            print(f"Strategy: Could not create vocabulary mappings: {e}")
 
         self.initialized = True
 
@@ -78,117 +84,51 @@ class GenerationAsClassification(BaseStrategy):
         model_inputs = [ids.clone() for ids in input_ids]
 
         while len(generated_text.split()) < max_length:
-            # step 1: generate next-token probabilities
-            computed_probs = []
-            for model, index in zip(self.models, range(len(self.models))):
-                tokenized = input_ids[index]
-                p = torch.nn.functional.softmax(
-                    model(tokenized).logits[:, -1, :], dim=-1
-                )
+            # Step 1: Compute next-token probabilities for each model
+            computed_probs = [
+                torch.nn.functional.softmax(model(input_id).logits[:, -1, :], dim=-1)
+                for model, input_id in zip(self.models, input_ids)
+            ]
 
-                # add computed probabilities
-                computed_probs.append(p)
-
-            # step 2: map probabilities to the union vocabulary
+            # Step 2: Map probabilities to the union vocabulary
             mapped_probs = []
-            for prob, index in zip(computed_probs, range(len(computed_probs))):
-                mapping = self.mappings[index]
+            for prob, mapping in zip(computed_probs, self.mappings):
                 q = torch.zeros(len(self.union_vocab), device=prob.device)
-                q.scatter_add_(
-                    0, torch.tensor(mapping, device=prob.device), prob.squeeze(0)
-                )
-
-                # add mapped probiliities
+                q.scatter_add_(0, mapping, prob.squeeze(0))
                 mapped_probs.append(q)
 
-            # step 3: average probabilities to get ensemble distribution
-            # q = (q1 + q2) / 2  # Ensemble by averaging
-            average = torch.stack(mapped_probs).mean(dim=0)
+            # Step 3: Average probabilities
+            average_probs = torch.stack(mapped_probs).mean(dim=0)
 
-            # step 4: Sample the next token
-            next_token_idx = torch.multinomial(average.squeeze(0), num_samples=1).item()  # Scalar index
+            # Step 4: Sample the next token
+            next_token_idx = torch.multinomial(average_probs, num_samples=1).item()
             sampled_token = list(self.union_vocab_with_index.keys())[next_token_idx]
 
-            print(sampled_token)
+            # Step 6: Decode the sampled token
+            generated_token = ""
+            for tokenizer in self.tokenizers:
+                vocab = tokenizer.get_vocab()
+                if sampled_token in vocab:
+                    token_id = tokenizer.convert_tokens_to_ids(sampled_token)
+                    generated_token = tokenizer.decode([token_id])
+                    break
 
-            # Step 5: convert sampled token back to token IDs for each tokenizer
-            vocabularies = [tokenizer.get_vocab() for tokenizer in self.tokenizers]
-            token_ids = []
-            for tokenizer, index in zip(self.tokenizers, range(len(self.tokenizers))):
-                token_id = (
-                    tokenizer.convert_tokens_to_ids(sampled_token)
-                    if sampled_token in vocabularies[index]
-                    else tokenizer.unk_token_id
-                )
-                token_ids.append(token_id)
+            # Fallback if token is not found in any tokenizer
+            if not generated_token:
+                generated_token = ""  # You could use "<unk>" as a fallback
 
-            # step 6: decode and append, TODO: fix manual decoding
+            # Step 7: Append decoded token to the generated text
+            if sampled_token not in [tokenizer.eos_token for tokenizer in self.tokenizers if tokenizer.eos_token]:
+                generated_text += generated_token
 
-            if sampled_token in vocabularies[0]:
-                generated_token = self.tokenizers[0].decode(
-                    [self.tokenizers[0].convert_tokens_to_ids(sampled_token)]
-                )
-            elif sampled_token in vocabularies[1]:
-                generated_token = self.tokenizers[1].decode(
-                    [self.tokenizers[1].convert_tokens_to_ids(sampled_token)]
-                )
-            else:
-                generated_token = ""  # Handle missing tokens
+            # Update input_ids for the next iteration
+            input_ids = [
+                torch.cat([ids, torch.tensor([[token_id]], device=ids.device)], dim=-1)
+                for ids, token_id in zip(input_ids, [tokenizer.convert_tokens_to_ids(sampled_token) or tokenizer.unk_token_id for tokenizer in self.tokenizers])
+            ]
 
-            # step 7: append decoded token to generated text
-            generated_text += (
-                generated_token
-                if sampled_token not in [t1.eos_token, t2.eos_token]
-                else ""
-            )
-
-            # step 8: update inputs, so that next iter gets correct text
-            t1_token_id = (
-                self.tokenizers[0].convert_tokens_to_ids(sampled_token)
-                or self.tokenizers[0].unk_token_id
-            )
-            t2_token_id = (
-                self.tokenizers[1].convert_tokens_to_ids(sampled_token)
-                or self.tokenizers[1].unk_token_id
-            )
-
-            # step 9.1: update input_ids
-            if t1_token_id is None:
-                t1_token_id = (
-                    t1.unk_token_id if t1.unk_token_id is not None else 0
-                )  # Fallback to 0 if unk_token_id is None
-                print(
-                    f"Warning: Token '{sampled_token}' not found in t1 vocabulary. Using {t1_token_id} instead."
-                )
-            else:
-                I1 = torch.cat(
-                    [
-                        input_ids[0],
-                        torch.tensor([[t1_token_id]], device=input_ids[0].device),
-                    ],
-                    dim=-1,
-                )
-
-            # step 9.2: update input_ids
-            if t2_token_id is None:
-                t2_token_id = (
-                    t2.unk_token_id if t2.unk_token_id is not None else 0
-                )  # Fallback to 0 if unk_token_id is None
-                print(
-                    f"Warning: Token '{sampled_token}' not found in t1 vocabulary. Using {t2_token_id} instead."
-                )
-            else:
-                I2 = torch.cat(
-                    [
-                        input_ids[1],
-                        torch.tensor([[t2_token_id]], device=input_ids[1].device),
-                    ],
-                    dim=-1,
-                )
-
-            # step 9: handle stopping criterion
-            if sampled_token in [t1.eos_token, t2.eos_token]:
-                print(f"hit eos token: {t1.eos_token} or {t2.eos_token}")
+            # Handle stopping criterion
+            if any(sampled_token == tokenizer.eos_token for tokenizer in self.tokenizers):
                 break
 
         return generated_text
