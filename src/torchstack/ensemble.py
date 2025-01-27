@@ -21,11 +21,11 @@ class EnsembleForCausalLM(torch.nn.Module):
         if self.locked:
             raise ValueError("The ensemble is locked and cannot accept new members.")
         
-        if not isinstance(model, AutoModelMember):
-            raise ValueError("Model must be an instance of AutoModelMember.")
+        # if not isinstance(model, AutoModelMember):
+        #     raise ValueError("Model must be an instance of AutoModelMember.")
         
-        if not isinstance(tokenizer, AutoTokenizer):
-            raise ValueError("Tokenizer must be an instance of AutoTokenizer.")
+        # if not isinstance(tokenizer, AutoTokenizer):
+        #     raise ValueError("Tokenizer must be an instance of AutoTokenizer.")
         
         self.members.append((model.to(self.device), tokenizer))
 
