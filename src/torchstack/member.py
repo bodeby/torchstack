@@ -8,7 +8,7 @@ class AutoModelMember(AutoModelForCausalLM):
         super().__init__()
         self.weight = -math.inf
         self.current_device = "cpu"  # Default to CPU
- 
+
     # verify is member weight is valid
     def _is_valid_weight(self, weight: float):
         if not (0.0 <= weight <= 1.0):
@@ -45,8 +45,8 @@ class AutoModelMember(AutoModelForCausalLM):
         else:
             self._offload_to_cpu()
 
-       # add model weights
-    
+    # add model weights
+
     # add weights
     def modify_weight(self, weight: float):
         if self._is_valid_weight(weight):

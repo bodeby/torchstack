@@ -4,17 +4,14 @@ from torchstack import AutoModelMember
 from torchstack import Configuration
 from torchstack import Ensemble
 
+# sub-level imports
+from torchstack.strategies import GenerationAsClassification
 
 # for model distribution
 from torchstack import EnsembleModelForCausalLM
-from torchstack import HFEnsembleModel
-
+from torchstack import EnsembleDistributable
 
 from huggingface_hub import login
-
-# sub-level imports
-from torchstack.strategies import GenerationAsClassification
-from torchstack.strategies import BaseStrategy
 
 # constants
 MODEL_ONE = "meta-llama/Llama-3.2-1B-Instruct"
@@ -44,7 +41,6 @@ def main():
 
     # generate response with ensemble
     response = ensemble.generate(prompt="Finish this sentence: The quick brown ...")
-
     print(response)  # responses from transformer ensemble
 
     ### EXAMPLE WORKFLOW FOR TRAINING AND PUSHING MODEL
@@ -56,7 +52,7 @@ def main():
     )
     
     config = AutoConfig.from_pretrained(MODEL_ONE)
-    hf_model = HFEnsembleModel(config, ensemble_model) # Needs a new name
+    hf_model = EnsembleDistributable(config, ensemble_model) # Needs a new name
 
     # Authenticate with Hugginface Before
     login(token="<insert_token>")

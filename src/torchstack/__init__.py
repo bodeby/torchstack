@@ -2,11 +2,11 @@
 from .configuration import Configuration
 from .member import AutoModelMember
 from .ensemble import Ensemble
-from .ensemble_model import HFEnsembleModel
+from .distribute import EnsembleDistributable
 
 # alignment strategies
-from .tokenization.union_vocabulary import UnionVocabularyStrategy
-from .tokenization.projection import ProjectionStrategy
+# from .tokenization.union_vocabulary import UnionVocabularyStrategy
+# from .tokenization.projection import ProjectionStrategy
 
 # models
 from .models.causal_model import EnsembleModelForCausalLM
@@ -18,10 +18,10 @@ __all__ = [
     "Ensemble",
 
     # alignment strategies
-    "UnionVocabularyStrategy",
-    "ProjectionStrategy",
+#    "UnionVocabularyStrategy",
+#    "ProjectionStrategy",
     
     # models
-    "HFEnsembleModel",
+    "EnsembleDistributable",
     "EnsembleModelForCausalLM",
 ]

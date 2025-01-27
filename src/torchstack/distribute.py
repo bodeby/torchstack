@@ -3,7 +3,7 @@ from .models.causal_model import EnsembleModelForCausalLM
 
 
 # wrapper for pretrained model
-class HFEnsembleModel(PreTrainedModel):
+class EnsembleDistributable(PreTrainedModel):
     def __init__(
         self, config: PreTrainedConfig, ensemble_model: EnsembleModelForCausalLM
     ):
